@@ -8,10 +8,10 @@ use syn::{
 
 #[proc_macro]
 pub fn c(input: TokenStream) -> TokenStream {
-    let comprehension = parse_macro_input!(input as RawComprehension);
+    let comprehension = parse_macro_input!(input as Comprehension);
     match comprehension.expand() {
         Ok(c) => {
-            println!("{}", c);
+            // println!("{}", c);
             c.into()
         }
         Err(e) => e.to_compile_error().into(),
@@ -19,18 +19,18 @@ pub fn c(input: TokenStream) -> TokenStream {
 }
 
 /// The comprehesion of type `$var => $expr $fors`.
-#[derive(Debug)]
-struct RawComprehension {
+// #[derive(Debug)]
+struct Comprehension {
     /// The left side of the macro
     // var: syn::Ident,
     expr: proc_macro2::TokenStream,
     for_loop: For,
-    // if_stmt: std::option::Option<proc_macro2::TokenStream>,
+    if_stmt: std::option::Option<syn::ExprBinary>,
 }
 
-impl Parse for RawComprehension {
+impl Parse for Comprehension {
     fn parse(mut input: syn::parse::ParseStream) -> syn::Result<Self> {
-        println!("{:#?}", input);
+        // println!("{:#?}", input);
         if input.is_empty() {
             // return syn::Result::Err(input.error("comprehension must not be empty"));
             return syn::Result::Err(syn::Error::new(
@@ -39,28 +39,43 @@ impl Parse for RawComprehension {
             ));
         }
         let expr = parse_until(&mut input, Token![for])?;
-        println!("expr {:#?}", expr);
+        // println!("expr {:#?}", expr);
         let for_loop = input.parse::<For>()?;
         // println!("{:#?}", for_loop);
         // let expr = parse_until(&mut input, Token![if])?;
+        let if_stmt = if input.peek(Token![if]) {
+            input.parse::<Token![if]>()?;
+            std::option::Option::Some(input.parse::<syn::ExprBinary>()?)
+        } else {
+            std::option::Option::None
+        };
         syn::Result::Ok(Self {
             // var,
             expr,
             for_loop,
-            // if_stmt: std::option::Option::Some(proc_macro2::TokenStream::new()),
+            if_stmt,
         })
     }
 }
 
-impl RawComprehension {
+impl Comprehension {
     fn expand(self) -> syn::Result<proc_macro2::TokenStream> {
         let expr = self.expr;
-        println!("{}", expr);
+        // println!("{}", expr);
         let var = self.for_loop.var;
         let range = self.for_loop.range;
-        syn::Result::Ok(quote!(
-            (#range).map(|#var| {#expr})
-        ))
+        let if_stmt = self.if_stmt;
+        if if_stmt.is_none() {
+            syn::Result::Ok(quote!(
+                (#range).map(|#var| {#expr})
+            ))
+        } else {
+            syn::Result::Ok(quote!(
+                (#range)
+                    .map(|#var| {#expr})
+                    .filter(|#var| {#if_stmt})
+            ))
+        }
     }
 }
 
