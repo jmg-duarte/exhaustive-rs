@@ -1,7 +1,7 @@
 error: comprehension must not be empty
- --> $DIR/01-empty-iter.rs:3:1
+ --> $DIR/01-empty-iter.rs:4:5
   |
-3 | c![];
-  | ^^^^^
+4 |     c![];
+  |     ^^^^^
   |
   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)

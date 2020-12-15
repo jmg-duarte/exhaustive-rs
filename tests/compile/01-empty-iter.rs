@@ -1,5 +1,5 @@
 use exhaustive::c;
 
-c![];
-
-fn main() {}
+fn main() {
+    c![];
+}

@@ -1,5 +1,7 @@
 use exhaustive::c;
 
-c![n => n * n];
 
-fn main() {}
+
+fn main() {
+    c![n * n];
+}
