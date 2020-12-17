@@ -1,5 +1,5 @@
 use proc_macro::TokenStream;
-use quote::{quote, ToTokens};
+use quote::quote;
 use syn::{
     parse::{Parse, Peek},
     parse_macro_input, Token,
@@ -25,7 +25,7 @@ struct Comprehension {
     // var: syn::Ident,
     expr: proc_macro2::TokenStream,
     for_loop: For,
-    if_stmt: std::option::Option<syn::ExprBinary>,
+    if_stmt: std::option::Option<syn::Expr>,
 }
 
 impl Parse for Comprehension {
@@ -45,7 +45,7 @@ impl Parse for Comprehension {
         // let expr = parse_until(&mut input, Token![if])?;
         let if_stmt = if input.peek(Token![if]) {
             input.parse::<Token![if]>()?;
-            std::option::Option::Some(input.parse::<syn::ExprBinary>()?)
+            std::option::Option::Some(input.parse::<syn::Expr>()?)
         } else {
             std::option::Option::None
         };
@@ -100,7 +100,7 @@ fn parse_until<T: Peek>(
 // #[derive(Debug)]
 struct For {
     var: syn::Ident,
-    expr: syn::Expr
+    expr: syn::Expr,
 }
 
 /// Implementation of `syn::Parse` for `For`.
