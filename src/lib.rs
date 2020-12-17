@@ -63,15 +63,15 @@ impl Comprehension {
         let expr = self.expr;
         // println!("{}", expr);
         let var = self.for_loop.var;
-        let range = self.for_loop.range;
+        let for_expr = self.for_loop.expr;
         let if_stmt = self.if_stmt;
         if if_stmt.is_none() {
             syn::Result::Ok(quote!(
-                (#range).map(|#var| {#expr})
+                (#for_expr).map(|#var| {#expr})
             ))
         } else {
             syn::Result::Ok(quote!(
-                (#range)
+                (#for_expr)
                     .map(|#var| {#expr})
                     .filter(|#var| {#if_stmt})
             ))
@@ -97,10 +97,10 @@ fn parse_until<T: Peek>(
 /// The for loop representation.
 /// Should probably nest the following `for` and `if`'s,
 /// `syn::punctuated::Punctuated` style.
-#[derive(Debug)]
+// #[derive(Debug)]
 struct For {
     var: syn::Ident,
-    range: Range,
+    expr: syn::Expr
 }
 
 /// Implementation of `syn::Parse` for `For`.
@@ -116,71 +116,7 @@ impl Parse for For {
         }
         let var = input.parse::<syn::Ident>()?;
         input.parse::<Token![in]>()?;
-        let range = input.parse::<Range>()?;
-        syn::Result::Ok(Self { var, range })
-    }
-}
-
-/// The for loop Range structure.
-///
-/// ```rust
-/// c![v in v for 1..10];
-///               ^^^^^
-///               | the corresponding `Range`
-/// ```
-struct Range {
-    // consider adding a span
-    // span: proc_macro2::Span,
-    start: syn::LitInt,
-    end: syn::LitInt,
-    inclusive: bool,
-}
-
-impl ToTokens for Range {
-    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        let start = &self.start;
-        let end = &self.end;
-        tokens.extend(if self.inclusive {
-            quote!(#start ..= #end)
-        } else {
-            quote!(#start .. #end)
-        })
-    }
-}
-
-impl Parse for Range {
-    /// # TODO
-    /// Consider missing limits such as:
-    /// - `..10` - Missing start
-    /// - `10..` - Missing end
-    /// - `..` - Missing both
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        let start = input.parse::<syn::LitInt>()?;
-        let inclusive = if input.peek(Token![..=]) {
-            input.parse::<Token![..=]>()?;
-            true
-        } else {
-            input.parse::<Token![..]>()?;
-            false
-        };
-        let end = input.parse::<syn::LitInt>()?;
-        syn::Result::Ok(Self {
-            start,
-            inclusive,
-            end,
-        })
-    }
-}
-
-impl std::fmt::Debug for Range {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Range")
-            .field(
-                "start",
-                &format!("LitInt {{ {} }}", self.start.base10_digits()),
-            )
-            .field("end", &format!("LitInt {{ {} }}", self.end.base10_digits()))
-            .field("inclusive", &format!("{}", self.inclusive))
-            .finish()
+        let expr = input.parse::<syn::Expr>()?;
+        syn::Result::Ok(Self { var, expr })
     }
 }
