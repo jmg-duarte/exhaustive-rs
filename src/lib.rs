@@ -8,6 +8,7 @@ use syn::{
 
 // [5/1/2021]
 // TODO: rename the macro from c! to exhaust!
+// TODO: embed the if in the for
 // TODO: support multiple fors
 // TODO: support multiple ifs
 // TODO: review the documentation
