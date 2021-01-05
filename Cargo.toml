@@ -12,6 +12,7 @@ doctest = false
 proc-macro2 = "1.0"
 quote = "1.0"
 syn = { version = "1.0", features = ["full", "parsing","extra-traits"] }
+paste = "1.0"
 
 [dev-dependencies]
 trybuild = "1.0"
