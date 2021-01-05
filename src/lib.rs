@@ -25,7 +25,7 @@ pub fn c(input: TokenStream) -> TokenStream {
 }
 
 /// The comprehesion of type `$var => $expr $fors`.
-// #[derive(Debug)]
+#[derive(Debug)]
 struct Comprehension {
     /// The left side of the macro
     // var: syn::Ident,
@@ -103,7 +103,7 @@ fn parse_until<T: Peek>(
 /// The for loop representation.
 /// Should probably nest the following `for` and `if`'s,
 /// `syn::punctuated::Punctuated` style.
-// #[derive(Debug)]
+#[derive(Debug)]
 struct For {
     var: syn::Ident,
     expr: syn::Expr,
