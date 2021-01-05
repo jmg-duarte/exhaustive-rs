@@ -8,6 +8,8 @@ fn compile_tests() {
     t.pass("tests/compile/03-for-loop.rs");
     t.pass("tests/compile/04-for-if.rs");
     t.pass("tests/compile/05-for-iter.rs");
+    t.pass("tests/compile/06-expr-if.rs");
+    t.pass("tests/compile/07-expr-if.rs");
 }
 
 #[test]
