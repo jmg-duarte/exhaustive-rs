@@ -6,6 +6,11 @@ use syn::{
 };
 // target syntax: `let squares_map = c![n*n for n in 0..100 if n % 5 != 0];`
 
+// [5/1/2021]
+// TODO: rename the macro from c! to exhaust!
+// TODO: support multiple fors
+// TODO: support multiple ifs
+
 #[proc_macro]
 pub fn c(input: TokenStream) -> TokenStream {
     let comprehension = parse_macro_input!(input as Comprehension);
