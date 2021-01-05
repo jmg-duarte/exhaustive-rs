@@ -10,6 +10,7 @@ use syn::{
 // TODO: rename the macro from c! to exhaust!
 // TODO: support multiple fors
 // TODO: support multiple ifs
+// TODO: review the documentation
 
 #[proc_macro]
 pub fn c(input: TokenStream) -> TokenStream {
