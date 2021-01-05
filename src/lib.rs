@@ -8,7 +8,6 @@ use syn::{
 
 // [5/1/2021]
 // TODO: rename the macro from c! to exhaust!
-// TODO: embed the if in the for
 // TODO: support multiple fors
 // TODO: support multiple ifs
 // TODO: review the documentation
@@ -32,7 +31,6 @@ struct Comprehension {
     // var: syn::Ident,
     expr: proc_macro2::TokenStream,
     for_loop: For,
-    if_stmt: std::option::Option<syn::Expr>,
 }
 
 impl Parse for Comprehension {
@@ -50,17 +48,10 @@ impl Parse for Comprehension {
         let for_loop = input.parse::<For>()?;
         // println!("{:#?}", for_loop);
         // let expr = parse_until(&mut input, Token![if])?;
-        let if_stmt = if input.peek(Token![if]) {
-            input.parse::<Token![if]>()?;
-            std::option::Option::Some(input.parse::<syn::Expr>()?)
-        } else {
-            std::option::Option::None
-        };
         syn::Result::Ok(Self {
             // var,
             expr,
             for_loop,
-            if_stmt,
         })
     }
 }
@@ -71,7 +62,7 @@ impl Comprehension {
         // println!("{}", expr);
         let var = self.for_loop.var;
         let for_expr = self.for_loop.expr;
-        let if_stmt = self.if_stmt;
+        let if_stmt = self.for_loop.if_stmt;
         if if_stmt.is_none() {
             syn::Result::Ok(quote!(
                 (#for_expr).map(|#var| {#expr})
@@ -108,6 +99,7 @@ fn parse_until<T: Peek>(
 struct For {
     var: syn::Ident,
     expr: syn::Expr,
+    if_stmt: std::option::Option<syn::Expr>,
 }
 
 /// Implementation of `syn::Parse` for `For`.
@@ -124,6 +116,12 @@ impl Parse for For {
         let var = input.parse::<syn::Ident>()?;
         input.parse::<Token![in]>()?;
         let expr = input.parse::<syn::Expr>()?;
-        syn::Result::Ok(Self { var, expr })
+        let if_stmt = if input.peek(Token![if]) {
+            input.parse::<Token![if]>()?;
+            std::option::Option::Some(input.parse::<syn::Expr>()?)
+        } else {
+            std::option::Option::None
+        };
+        syn::Result::Ok(Self { var, expr, if_stmt })
     }
 }
