@@ -56,6 +56,7 @@ impl Parse for Comprehension {
     }
 }
 
+// TODO: convert this into `impl ToTokens`
 impl Comprehension {
     fn expand(self) -> syn::Result<proc_macro2::TokenStream> {
         let expr = self.expr;
