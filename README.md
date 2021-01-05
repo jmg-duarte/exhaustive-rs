@@ -1,4 +1,7 @@
-# Exhaustive
+# `exhaustive`
+
+[<img alt="" src="https://img.shields.io/badge/docs.rs-exhaustive-success?style=flat-square">](https://docs.rs/exhaustive)
+[<img alt="" src="https://img.shields.io/crates/v/exhaustive?style=flat-square">](https://crates.io/crates/exhaustive)
 
 > exhaustive /ɪɡˈzɔːstɪv,ɛɡˈzɔːstɪv/ - **including or considering all elements or aspects; fully comprehensive.**
 
