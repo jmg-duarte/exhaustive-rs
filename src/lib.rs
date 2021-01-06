@@ -15,13 +15,7 @@ use syn::{
 #[proc_macro]
 pub fn c(input: TokenStream) -> TokenStream {
     let comprehension = parse_macro_input!(input as Comprehension);
-    match comprehension.expand() {
-        Ok(c) => {
-            // println!("{}", c);
-            c.into()
-        }
-        Err(e) => e.to_compile_error().into(),
-    }
+    comprehension.expand().into()
 }
 
 /// The comprehesion of type `$var => $expr $fors`.
@@ -30,7 +24,7 @@ struct Comprehension {
     /// The left side of the macro
     // var: syn::Ident,
     expr: proc_macro2::TokenStream,
-    for_loop: For,
+    fors: Vec<For>,
 }
 
 impl Parse for Comprehension {
@@ -45,36 +39,46 @@ impl Parse for Comprehension {
         }
         let expr = parse_until(&mut input, Token![for])?;
         // println!("expr {:#?}", expr);
-        let for_loop = input.parse::<For>()?;
+        let mut fors = vec![input.parse::<For>()?];
         // println!("{:#?}", for_loop);
         // let expr = parse_until(&mut input, Token![if])?;
+        while input.peek(Token![for]) {
+            fors.push(input.parse::<For>()?)
+        }
         syn::Result::Ok(Self {
             // var,
             expr,
-            for_loop,
+            fors,
         })
     }
 }
 
 // TODO: convert this into `impl ToTokens`
 impl Comprehension {
-    fn expand(self) -> syn::Result<proc_macro2::TokenStream> {
+    fn expand(self) -> proc_macro2::TokenStream {
+        // partially expand each for
+        let partial_expansions = self.fors.iter().rev().map(|head| {
+            move |inner| {
+                let var = &head.var;
+                let expr = &head.expr;
+                if let Some(if_stmt) = &head.if_stmt {
+                    quote!(#expr.filter(|#var| #if_stmt)
+
+                        for #var in #expr {
+                        if #if_stmt {
+                            #inner
+                        }
+                    })
+                } else {
+                    quote!(for #var in #expr {
+                        #inner
+                    })
+                }
+            }
+        });
         let expr = self.expr;
-        // println!("{}", expr);
-        let var = self.for_loop.var;
-        let for_expr = self.for_loop.expr;
-        let if_stmt = self.for_loop.if_stmt;
-        if if_stmt.is_none() {
-            syn::Result::Ok(quote!(
-                (#for_expr).map(|#var| {#expr})
-            ))
-        } else {
-            syn::Result::Ok(quote!(
-                (#for_expr)
-                    .map(|#var| {#expr})
-                    .filter(|#var| {#if_stmt})
-            ))
-        }
+        let inner = quote!(#expr);
+        partial_expansions.fold(inner, |acc, f| f(acc))
     }
 }
 
@@ -124,5 +128,27 @@ impl Parse for For {
             std::option::Option::None
         };
         syn::Result::Ok(Self { var, expr, if_stmt })
+    }
+}
+
+struct Combine<A, B> where
+A: Iterator,
+B: Iterator,{
+    a: A,
+    b: B,
+    current_a: A::Item,
+}
+
+impl<A, B> Iterator for Combine<A, B>
+where
+    A: Iterator,
+    B: Iterator,
+{
+    type Item = (A::Item, B::Item);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(b_item) = self.b.next() {
+
+        }
     }
 }

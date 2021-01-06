@@ -10,6 +10,7 @@ fn compile_tests() {
     t.pass("tests/compile/05-for-iter.rs");
     t.pass("tests/compile/06-expr-if.rs");
     t.pass("tests/compile/07-expr-if.rs");
+    t.pass("tests/compile/08-multiple-for-loops.rs");
 }
 
 #[test]
@@ -51,7 +52,7 @@ fn test_for_iter() {
 #[test]
 fn test_if_expr() {
     let i = (0..10).map(|x| x * 2);
-    let is_even = |n:&i32| n % 2 == 0;
+    let is_even = |n: &i32| n % 2 == 0;
     let c = c![n for n in i if is_even(n)];
     let values: Vec<i32> = c.collect();
     assert_eq!(values, vec![0, 2, 4, 6, 8, 10, 12, 14, 16, 18]);
